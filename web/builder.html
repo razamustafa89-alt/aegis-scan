@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Build a case study · Casefolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;450;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/app.css">
+</head>
+<body>
+<div class="ambient"></div>
+<header>
+  <div class="container nav">
+    <a class="logo" href="/" style="color:inherit"><span class="logo-mark">◆</span><span>Case<em>folio</em></span></a>
+    <span class="muted" id="aiState"></span>
+  </div>
+</header>
+
+<main class="wizard">
+  <div class="progress" id="progress">
+    <div class="dot on"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+  </div>
+
+  <!-- Step 1: context -->
+  <section class="panel" id="step-context">
+    <h2>Tell me about the project</h2>
+    <p class="lead">A few sentences is enough — what you designed, for whom, and why. I'll ask smart
+      follow-ups from here.</p>
+    <label class="fld">
+      <textarea id="context" placeholder="e.g. I redesigned the booking flow for a travel startup's iOS app. Hosts were dropping off at payment..."></textarea>
+    </label>
+    <div class="row-actions">
+      <span class="muted">Step 1 of 4</span>
+      <button class="btn btn-primary" id="startBtn">Continue →</button>
+    </div>
+  </section>
+
+  <!-- Step 2: interview -->
+  <section class="panel hide" id="step-interview">
+    <h2>A few quick questions</h2>
+    <p class="lead">These are the things that make a case study look strategic. Skip any that don't apply.</p>
+    <div id="questions"></div>
+    <div class="row-actions">
+      <span class="muted" id="roundInfo"></span>
+      <button class="btn btn-primary" id="answersBtn">Continue →</button>
+    </div>
+  </section>
+
+  <!-- Step 3: uploads -->
+  <section class="panel hide" id="step-upload">
+    <h2>Add your screens</h2>
+    <p class="lead">Upload your real designs (PNG/JPG/WebP). They'll be captioned, placed in the right
+      sections, and used to theme the page to your product's brand.</p>
+    <div class="drop" id="drop">
+      <strong>Click to upload</strong> or drag &amp; drop · up to 20 images
+      <input type="file" id="fileInput" accept="image/*" multiple class="hide">
+    </div>
+    <div class="thumbs" id="thumbs"></div>
+    <div class="row-actions">
+      <span class="muted" id="uploadInfo">No images yet — you can still generate without them.</span>
+      <button class="btn btn-primary" id="toGenerate">Continue →</button>
+    </div>
+  </section>
+
+  <!-- Step 4: generate -->
+  <section class="panel hide" id="step-generate">
+    <h2>Generate your case study</h2>
+    <p class="lead">I'll write the narrative, build your flow diagrams and results charts, pick the best
+      template, and theme it to your brand.</p>
+    <div class="row-actions">
+      <span class="muted">This can take ~20–40 seconds.</span>
+      <button class="btn btn-primary" id="generateBtn">✨ Generate case study</button>
+    </div>
+    <div class="note hide" id="genNote"></div>
+  </section>
+</main>
+
+<script src="/assets/builder.js"></script>
+</body>
+</html>

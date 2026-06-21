@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Build your portfolio · Casefolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;450;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/app.css">
+<style>
+  .pick{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;margin:6px 0 4px}
+  .pick label{border:1px solid var(--stroke);border-radius:var(--r-md);overflow:hidden;cursor:pointer;
+    background:var(--glass);display:block;transition:border-color .2s}
+  .pick label.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-dim) inset}
+  .pick .ph{aspect-ratio:16/10;background:var(--bg-2);display:grid;place-items:center;color:var(--txt-3);font-size:.8rem}
+  .pick .ph img{width:100%;height:100%;object-fit:cover}
+  .pick .t{padding:10px 12px;font-size:.86rem;font-weight:600}
+  .pick input{position:absolute;opacity:0}
+  .ext-row{display:grid;grid-template-columns:1fr 1.4fr auto;gap:8px;margin-bottom:8px}
+  .ext-row input{margin:0}
+  .linkbtn{color:var(--accent-2);font-size:.9rem;font-weight:600;background:none}
+</style>
+</head>
+<body>
+<div class="ambient"></div>
+<header>
+  <div class="container nav">
+    <a class="logo" href="/" style="color:inherit"><span class="logo-mark">◆</span><span>Case<em>folio</em></span></a>
+    <span class="muted" id="aiState"></span>
+  </div>
+</header>
+
+<main class="wizard">
+  <div class="progress" id="progress">
+    <div class="dot on"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+  </div>
+
+  <!-- Step 1: bio context -->
+  <section class="panel" id="step-context">
+    <h2>Tell me about you</h2>
+    <p class="lead">Who you are, what you design, and who you help. A few sentences is plenty.</p>
+    <label class="fld">
+      <textarea id="context" placeholder="e.g. I'm Maya, a product designer focused on 0→1 mobile apps for fintech. 6 years experience, ex-Acme..."></textarea>
+    </label>
+    <div class="row-actions"><span class="muted">Step 1 of 5</span>
+      <button class="btn btn-primary" id="toWork">Continue →</button></div>
+  </section>
+
+  <!-- Step 2: select work -->
+  <section class="panel hide" id="step-work">
+    <h2>Pick your work</h2>
+    <p class="lead">Select the case studies to feature, and add any external projects (Dribbble, Behance, live sites).</p>
+    <strong style="font-size:.9rem">Your case studies</strong>
+    <div class="pick" id="caseList"><span class="muted">Loading…</span></div>
+    <strong style="font-size:.9rem;display:block;margin-top:18px">External projects</strong>
+    <div id="extList" style="margin-top:8px"></div>
+    <button class="linkbtn" id="addExt">+ Add external link</button>
+    <div class="row-actions"><span class="muted" id="workInfo"></span>
+      <button class="btn btn-primary" id="toInterview">Continue →</button></div>
+  </section>
+
+  <!-- Step 3: interview -->
+  <section class="panel hide" id="step-interview">
+    <h2>A few quick questions</h2>
+    <p class="lead">These shape the tone and content of your site.</p>
+    <div id="questions"></div>
+    <div class="row-actions"><span class="muted" id="roundInfo"></span>
+      <button class="btn btn-primary" id="answersBtn">Continue →</button></div>
+  </section>
+
+  <!-- Step 4: avatar -->
+  <section class="panel hide" id="step-avatar">
+    <h2>Add a profile photo <span class="muted" style="font-weight:400">(optional)</span></h2>
+    <p class="lead">A friendly photo helps. You can skip this.</p>
+    <div class="drop" id="drop"><strong>Click to upload</strong> or drag &amp; drop
+      <input type="file" id="fileInput" accept="image/*" class="hide"></div>
+    <div class="thumbs" id="thumbs"></div>
+    <div class="row-actions"><span class="muted" id="avatarInfo"></span>
+      <button class="btn btn-primary" id="toGenerate">Continue →</button></div>
+  </section>
+
+  <!-- Step 5: generate -->
+  <section class="panel hide" id="step-generate">
+    <h2>Generate your portfolio</h2>
+    <p class="lead">I'll write your intro, about, work grid, skills and contact, then pick the best template.</p>
+    <div class="row-actions"><span class="muted">~20–40 seconds.</span>
+      <button class="btn btn-primary" id="generateBtn">✨ Generate portfolio</button></div>
+    <div class="note hide" id="genNote"></div>
+  </section>
+</main>
+
+<script src="/assets/portfolio.js"></script>
+</body>
+</html>

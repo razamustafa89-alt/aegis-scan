@@ -1,0 +1,11 @@
+# Casefolio runtime data (ephemeral; do not commit)
+/uploads/
+/data/
+.env
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/

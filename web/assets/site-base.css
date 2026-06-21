@@ -1,0 +1,86 @@
+/* ============================================================
+   CASEFOLIO — shared structure for the public portfolio site.
+   Reuses the same --t-* template tokens as the case pages.
+   ============================================================ */
+:root{
+  --t-bg:#ffffff; --t-surface:#f6f6f7; --t-text:#16181d; --t-muted:#6b7280;
+  --t-primary:#2c2c2c; --t-accent:#ff5a5f; --t-line:rgba(0,0,0,.10);
+  --t-maxw:1040px; --t-radius:16px;
+  --t-font-display:'Space Grotesk',system-ui,sans-serif;
+  --t-font-body:'Inter',system-ui,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{background:var(--t-bg);color:var(--t-text);
+  font-family:var(--t-font-body);line-height:1.65;-webkit-font-smoothing:antialiased}
+img{max-width:100%;display:block}
+a{color:var(--t-accent)}
+.pf-wrap{max-width:var(--t-maxw);margin:0 auto;padding:0 24px 120px}
+
+/* intro */
+.pf-intro{padding:96px 0 40px;display:flex;gap:30px;align-items:center;flex-wrap:wrap}
+.pf-avatar{width:104px;height:104px;border-radius:50%;object-fit:cover;
+  border:1px solid var(--t-line);background:var(--t-surface)}
+.pf-intro .who{flex:1;min-width:260px}
+.pf-intro .role{color:var(--t-accent);font-weight:700;letter-spacing:.04em;text-transform:uppercase;font-size:.82rem}
+.pf-intro h1{font-family:var(--t-font-display);font-weight:700;letter-spacing:-.02em;
+  font-size:clamp(2.2rem,6vw,3.4rem);line-height:1.05;margin:8px 0}
+.pf-intro .tagline{color:var(--t-muted);font-size:1.15rem;max-width:620px}
+.pf-intro .loc{color:var(--t-muted);font-size:.9rem;margin-top:10px}
+.pf-links{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.pf-links a{font-size:.85rem;font-weight:600;padding:8px 14px;border-radius:99px;
+  background:var(--t-surface);border:1px solid var(--t-line);color:var(--t-text)}
+
+/* sections */
+.pf-section{margin:56px 0}
+.pf-section h2{font-family:var(--t-font-display);font-size:clamp(1.4rem,3vw,2rem);margin-bottom:18px}
+.pf-section .body{max-width:680px}
+.pf-section .body p{margin-bottom:14px;font-size:1.05rem}
+
+/* work grid */
+.pf-work{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:22px}
+.pf-card{border:1px solid var(--t-line);border-radius:var(--t-radius);overflow:hidden;
+  background:var(--t-surface);display:flex;flex-direction:column;transition:transform .2s,box-shadow .2s}
+.pf-card:hover{transform:translateY(-3px);box-shadow:0 18px 40px -22px rgba(0,0,0,.45)}
+.pf-card .thumb{aspect-ratio:16/10;background:var(--t-bg);overflow:hidden}
+.pf-card .thumb img{width:100%;height:100%;object-fit:cover}
+.pf-card .meta{padding:18px}
+.pf-card .meta h3{font-family:var(--t-font-display);font-size:1.1rem;margin-bottom:6px}
+.pf-card .meta p{color:var(--t-muted);font-size:.92rem}
+.pf-card .meta .go{display:inline-block;margin-top:12px;color:var(--t-accent);font-weight:600;font-size:.9rem}
+
+/* skills */
+.pf-skills{display:flex;flex-wrap:wrap;gap:10px}
+.pf-skills span{font-size:.9rem;font-weight:500;padding:8px 14px;border-radius:10px;
+  background:var(--t-surface);border:1px solid var(--t-line)}
+
+/* testimonials */
+.pf-quotes{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}
+.pf-quote{border:1px solid var(--t-line);border-radius:var(--t-radius);padding:22px;background:var(--t-surface)}
+.pf-quote p{font-size:1.05rem}
+.pf-quote cite{display:block;color:var(--t-muted);font-style:normal;margin-top:10px;font-size:.9rem}
+
+/* contact */
+.pf-contact{border:1px solid var(--t-line);border-radius:var(--t-radius);padding:32px;background:var(--t-surface)}
+.pf-contact h2{margin-bottom:10px}
+.pf-contact .body{color:var(--t-muted);margin-bottom:18px}
+.pf-form{display:grid;gap:12px;max-width:520px}
+.pf-form input,.pf-form textarea{width:100%;background:var(--t-bg);border:1px solid var(--t-line);
+  color:var(--t-text);border-radius:10px;padding:12px 14px;font-size:.98rem;font-family:inherit}
+.pf-form textarea{min-height:110px;resize:vertical}
+.pf-btn{justify-self:start;background:var(--t-accent);color:#fff;border:none;border-radius:99px;
+  padding:12px 24px;font-weight:600;cursor:pointer}
+.pf-btn:disabled{opacity:.6;cursor:not-allowed}
+.pf-msg{margin-top:10px;font-size:.92rem;color:var(--t-muted)}
+
+.pf-foot{border-top:1px solid var(--t-line);margin-top:70px;padding-top:24px;
+  color:var(--t-muted);font-size:.9rem;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.pf-foot a{color:var(--t-accent)}
+
+/* owner controls (shared look with case page) */
+.cs-controls{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:80;
+  display:flex;gap:8px;align-items:center;background:rgba(20,22,28,.92);color:#fff;
+  border:1px solid rgba(255,255,255,.14);border-radius:99px;padding:8px 12px;backdrop-filter:blur(12px);
+  box-shadow:0 16px 40px -16px rgba(0,0,0,.6);font-size:.85rem;flex-wrap:wrap;max-width:94vw}
+.cs-controls select{background:#11131a;color:#fff;border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:6px 8px}
+.cs-controls button{background:#fff;color:#11131a;border-radius:8px;padding:7px 12px;font-weight:600;cursor:pointer}
+.cs-controls .x{background:transparent;color:#9aa5bf;padding:6px}
