@@ -1,0 +1,14 @@
+/* TEMPLATE: minimal — restrained, lots of whitespace. Senior/strategy framing. */
+:root{
+  --t-bg:#fbfbfa; --t-surface:#f2f2f0; --t-text:#1b1b1a; --t-muted:#8a8a85;
+  --t-line:rgba(0,0,0,.07); --t-maxw:740px; --t-radius:12px;
+  --t-font-display:'Inter',system-ui,sans-serif;
+  --t-font-body:'Inter',system-ui,sans-serif;
+}
+.cs-hero{padding:120px 0 50px;text-align:center}
+.cs-hero .impact{margin:0 auto}
+.cs-tags{justify-content:center}
+.cs-section{margin:72px 0}
+.cs-section h2{font-weight:600;font-size:1.4rem}
+.cs-metric .num{color:var(--t-text)}
+.cs-quote{border:none;text-align:center;padding:0}

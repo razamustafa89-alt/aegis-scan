@@ -1,0 +1,10 @@
+/* TEMPLATE: dark — sleek dark aesthetic. Devtools / crypto / gaming / security. */
+:root{
+  --t-bg:#0a0c12; --t-surface:#12151f; --t-text:#eaeefb; --t-muted:#8b93a8;
+  --t-line:rgba(255,255,255,.10); --t-maxw:960px; --t-radius:18px;
+  --t-font-display:'Space Grotesk',system-ui,sans-serif;
+  --t-font-body:'Inter',system-ui,sans-serif;
+}
+.cs-hero .eyebrow{color:var(--t-accent)}
+.cs-fig img,.cs-hero-img{background:#0d1019}
+.cs-tag{background:rgba(255,255,255,.06)}

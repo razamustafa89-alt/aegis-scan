@@ -1,0 +1,87 @@
+/* ============================================================
+   CASEFOLIO — shared structure for the public case page.
+   Every template sets the --t-* tokens (and may override layout);
+   brand-extracted theme tokens are injected inline on <html>.
+   ============================================================ */
+:root{
+  --t-bg:#ffffff; --t-surface:#f6f6f7; --t-text:#16181d; --t-muted:#6b7280;
+  --t-primary:#2c2c2c; --t-accent:#ff5a5f; --t-line:rgba(0,0,0,.10);
+  --t-maxw:920px; --t-radius:16px;
+  --t-font-display:'Space Grotesk',system-ui,sans-serif;
+  --t-font-body:'Inter',system-ui,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{background:var(--t-bg);color:var(--t-text);
+  font-family:var(--t-font-body);line-height:1.65;-webkit-font-smoothing:antialiased}
+img{max-width:100%;display:block}
+.cs-wrap{max-width:var(--t-maxw);margin:0 auto;padding:0 24px 120px}
+
+/* hero */
+.cs-hero{padding:90px 0 40px}
+.cs-hero .eyebrow{color:var(--t-accent);font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;font-size:.8rem;margin-bottom:14px}
+.cs-hero h1{font-family:var(--t-font-display);font-weight:700;letter-spacing:-.02em;
+  font-size:clamp(2.2rem,6vw,3.6rem);line-height:1.04;margin-bottom:16px}
+.cs-hero .impact{font-size:clamp(1.1rem,2.2vw,1.45rem);color:var(--t-muted);max-width:680px}
+.cs-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+.cs-tag{font-size:.8rem;font-weight:600;padding:6px 13px;border-radius:99px;
+  background:var(--t-surface);border:1px solid var(--t-line);color:var(--t-text)}
+.cs-hero-img{margin-top:40px;border-radius:var(--t-radius);overflow:hidden;border:1px solid var(--t-line)}
+
+/* meta bar */
+.cs-meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:1px;
+  background:var(--t-line);border:1px solid var(--t-line);border-radius:var(--t-radius);
+  overflow:hidden;margin:46px 0}
+.cs-meta-item{background:var(--t-bg);padding:18px 20px}
+.cs-meta-item .label{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--t-muted)}
+.cs-meta-item .value{font-weight:600;margin-top:4px}
+
+/* sections */
+.cs-section{margin:54px 0}
+.cs-section h2{font-family:var(--t-font-display);font-size:clamp(1.4rem,3vw,2rem);
+  letter-spacing:-.01em;margin-bottom:16px}
+.cs-section .body p{margin-bottom:16px;font-size:1.05rem}
+.cs-section .body p:last-child{margin-bottom:0}
+
+/* gallery */
+.cs-gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:22px;margin-top:10px}
+.cs-fig{margin:0}
+.cs-fig img{border-radius:var(--t-radius);border:1px solid var(--t-line);background:var(--t-surface)}
+.cs-fig figcaption{color:var(--t-muted);font-size:.9rem;margin-top:10px}
+
+/* diagram */
+.cs-diagram{background:var(--t-surface);border:1px solid var(--t-line);border-radius:var(--t-radius);
+  padding:26px;text-align:center;overflow-x:auto}
+.cs-diagram .mermaid{display:inline-block}
+.cs-diagram figcaption{color:var(--t-muted);font-size:.9rem;margin-top:14px}
+
+/* chart */
+.cs-chart{background:var(--t-surface);border:1px solid var(--t-line);border-radius:var(--t-radius);padding:26px}
+.cs-chart .holder{position:relative;height:320px}
+
+/* metrics */
+.cs-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:18px}
+.cs-metric{background:var(--t-surface);border:1px solid var(--t-line);border-radius:var(--t-radius);
+  padding:24px;text-align:center}
+.cs-metric .num{font-family:var(--t-font-display);font-weight:700;font-size:2.2rem;color:var(--t-accent)}
+.cs-metric .label{color:var(--t-muted);font-size:.92rem;margin-top:4px}
+
+/* quote */
+.cs-quote{border-left:4px solid var(--t-accent);padding:8px 0 8px 24px;margin:40px 0}
+.cs-quote blockquote{font-size:1.35rem;font-family:var(--t-font-display);line-height:1.4}
+.cs-quote cite{display:block;color:var(--t-muted);font-style:normal;margin-top:12px;font-size:.95rem}
+
+/* signature */
+.cs-foot{border-top:1px solid var(--t-line);margin-top:70px;padding-top:24px;
+  color:var(--t-muted);font-size:.9rem;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.cs-foot a{color:var(--t-accent)}
+
+/* floating template/theme controls (owner view only) */
+.cs-controls{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:80;
+  display:flex;gap:8px;align-items:center;background:rgba(20,22,28,.92);color:#fff;
+  border:1px solid rgba(255,255,255,.14);border-radius:99px;padding:8px 12px;backdrop-filter:blur(12px);
+  box-shadow:0 16px 40px -16px rgba(0,0,0,.6);font-family:var(--t-font-body);font-size:.85rem;flex-wrap:wrap;max-width:94vw}
+.cs-controls select{background:#11131a;color:#fff;border:1px solid rgba(255,255,255,.2);
+  border-radius:8px;padding:6px 8px;font-family:inherit}
+.cs-controls button{background:#fff;color:#11131a;border-radius:8px;padding:7px 12px;font-weight:600;cursor:pointer}
+.cs-controls .x{background:transparent;color:#9aa5bf;padding:6px}

@@ -1,0 +1,9 @@
+/* TEMPLATE: editorial — clean, typography-led, light. Default for product/UX. */
+:root{
+  --t-bg:#ffffff; --t-surface:#f6f6f7; --t-text:#16181d; --t-muted:#6b7280;
+  --t-line:rgba(0,0,0,.10); --t-maxw:920px; --t-radius:16px;
+  --t-font-display:'Space Grotesk',system-ui,sans-serif;
+  --t-font-body:'Inter',system-ui,sans-serif;
+}
+.cs-hero{padding:88px 0 36px}
+.cs-section .body{max-width:680px}
