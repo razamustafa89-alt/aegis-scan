@@ -30,6 +30,25 @@ class PatchCaseRequest(BaseModel):
     theme: Optional[dict[str, Any]] = None
 
 
+class ExternalProject(BaseModel):
+    title: str
+    url: str
+    thumbnail: Optional[str] = ""
+    blurb: Optional[str] = ""
+
+
+class CreatePortfolioRequest(BaseModel):
+    context: str
+    case_slugs: list[str] = []
+    external: list[ExternalProject] = []
+
+
+class ContactRequest(BaseModel):
+    name: str = ""
+    email: str = ""
+    body: str
+
+
 # ----------------------------------------------------------------------
 # Tool schemas given to Claude
 # ----------------------------------------------------------------------
@@ -193,6 +212,84 @@ CASE_TOOL = {
             },
             "template_reason": {"type": "string", "description": "One line on why this template fits."},
             "blocks": {"type": "array", "items": _BLOCK},
+        },
+        "required": ["title", "summary", "recommended_template", "blocks"],
+    },
+}
+
+
+# 4) Portfolio generation — a personal site as ordered blocks.
+_PORTFOLIO_BLOCK = {
+    "type": "object",
+    "properties": {
+        "type": {
+            "type": "string",
+            "enum": ["intro", "about", "work", "skills", "testimonials", "contact"],
+        },
+        # intro
+        "name": {"type": "string"},
+        "role": {"type": "string", "description": "Headline role, e.g. 'Product Designer'."},
+        "tagline": {"type": "string"},
+        "avatar": {"type": "string", "description": "Asset ref for the avatar image."},
+        "location": {"type": "string"},
+        "links": {
+            "type": "array",
+            "description": "Social/contact links.",
+            "items": {
+                "type": "object",
+                "properties": {"label": {"type": "string"}, "url": {"type": "string"}},
+                "required": ["label", "url"],
+            },
+        },
+        # about / generic
+        "heading": {"type": "string"},
+        "body": {"type": "string"},
+        # work
+        "projects": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "title": {"type": "string"},
+                    "blurb": {"type": "string"},
+                    "thumbnail": {"type": "string", "description": "Image URL (provided in the prompt)."},
+                    "href": {"type": "string", "description": "Link to the case study or external project."},
+                },
+                "required": ["title"],
+            },
+        },
+        # skills
+        "skills": {"type": "array", "items": {"type": "string"}},
+        # testimonials
+        "quotes": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {"text": {"type": "string"}, "attribution": {"type": "string"}},
+                "required": ["text"],
+            },
+        },
+        # contact
+        "email": {"type": "string"},
+        "cta": {"type": "string"},
+    },
+    "required": ["type"],
+}
+
+PORTFOLIO_TOOL = {
+    "name": "build_portfolio",
+    "description": "Produce a complete, publication-ready designer portfolio site as ordered blocks.",
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "title": {"type": "string", "description": "Usually the designer's name."},
+            "summary": {"type": "string", "description": "1-2 sentence description for sharing previews."},
+            "recommended_template": {
+                "type": "string",
+                "enum": ["editorial", "bold", "minimal", "dark"],
+            },
+            "template_reason": {"type": "string"},
+            "blocks": {"type": "array", "items": _PORTFOLIO_BLOCK},
         },
         "required": ["title", "summary", "recommended_template", "blocks"],
     },

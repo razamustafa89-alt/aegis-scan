@@ -15,8 +15,14 @@ import base64
 from typing import Any, Optional
 
 from . import config
-from .models import CASE_TOOL, QUESTIONS_TOOL, VISION_TOOL
-from .prompts import INTERVIEW_SYSTEM, VISION_SYSTEM, generation_system
+from .models import CASE_TOOL, PORTFOLIO_TOOL, QUESTIONS_TOOL, VISION_TOOL
+from .prompts import (
+    INTERVIEW_SYSTEM,
+    PORTFOLIO_INTERVIEW_SYSTEM,
+    VISION_SYSTEM,
+    generation_system,
+    portfolio_generation_system,
+)
 
 
 # ----------------------------------------------------------------------
@@ -133,6 +139,55 @@ def generate_case_study(
         return _fallback_document(context, transcript, image_meta, theme)
 
 
+# ----------------------------------------------------------------------
+# Portfolio (phase 2)
+# ----------------------------------------------------------------------
+def portfolio_questions(context: str, transcript: list[dict]) -> dict[str, Any]:
+    rounds = sum(1 for t in transcript if t.get("role") == "answers")
+    if not config.ai_enabled():
+        return _fallback_portfolio_questions(rounds)
+    try:
+        text = _transcript_text(context, transcript)
+        out = _call_tool(PORTFOLIO_INTERVIEW_SYSTEM, text, QUESTIONS_TOOL)
+        out.setdefault("questions", [])
+        out.setdefault("ready", not out["questions"])
+        return out
+    except Exception as exc:
+        fb = _fallback_portfolio_questions(rounds)
+        fb["note"] = f"AI unavailable ({exc.__class__.__name__}); using built-in questions."
+        return fb
+
+
+def generate_portfolio(
+    context: str,
+    transcript: list[dict],
+    avatar: Optional[dict],
+    selected_cases: list[dict],
+    external: list[dict],
+) -> dict[str, Any]:
+    projects = list(selected_cases) + list(external)
+    work_notes = "\n".join(
+        f"- title={p.get('title')} | href={p.get('url') or p.get('href','')} "
+        f"| thumbnail={p.get('thumbnail','')} | context={p.get('summary') or p.get('blurb','')}"
+        for p in projects
+    )
+    avatar_note = (
+        f"An avatar image is available; set intro.avatar to ref={avatar['ref']}."
+        if avatar else "No avatar image was uploaded."
+    )
+    if not config.ai_enabled():
+        return _fallback_portfolio(context, transcript, avatar, projects)
+    try:
+        text = _transcript_text(context, transcript)
+        system = portfolio_generation_system(work_notes, avatar_note)
+        doc = _call_tool(system, text, PORTFOLIO_TOOL)
+        doc.setdefault("blocks", [])
+        doc.setdefault("recommended_template", config.DEFAULT_TEMPLATE)
+        return doc
+    except Exception:
+        return _fallback_portfolio(context, transcript, avatar, projects)
+
+
 # ======================================================================
 # Deterministic fallbacks (no API key / offline)
 # ======================================================================
@@ -240,6 +295,81 @@ def _fallback_document(
         "summary": (outcome or problem)[:160],
         "recommended_template": "dark" if theme.get("mode") == "dark" else config.DEFAULT_TEMPLATE,
         "template_reason": "Chosen from the screens' overall light/dark feel.",
+        "blocks": blocks,
+        "engine": "fallback",
+    }
+
+
+def _fallback_portfolio_questions(rounds: int) -> dict[str, Any]:
+    if rounds >= 1:
+        return {"ready": True, "questions": [], "engine": "fallback"}
+    return {
+        "ready": False,
+        "engine": "fallback",
+        "questions": [
+            {"id": "name", "question": "What's your name and the role/title you want to lead with?",
+             "why": "Your headline.", "placeholder": "Maya Rao — Product Designer"},
+            {"id": "about", "question": "In a couple of sentences, what do you do best and who do you help?",
+             "why": "Your bio.", "placeholder": "I design 0->1 mobile products for fintech teams..."},
+            {"id": "skills", "question": "List your core skills and tools.",
+             "why": "Quick scan for recruiters.", "placeholder": "Product design, prototyping, Figma, user research"},
+            {"id": "links", "question": "Which links should I include? (email, LinkedIn, Dribbble, etc.)",
+             "why": "So people can reach you.", "placeholder": "maya@mail.com, linkedin.com/in/maya"},
+            {"id": "location", "question": "Where are you based, and are you open to work?",
+             "why": "Context for hirers.", "placeholder": "Berlin · open to remote"},
+        ],
+    }
+
+
+def _fallback_portfolio(
+    context: str, transcript: list[dict], avatar: Optional[dict], projects: list[dict]
+) -> dict[str, Any]:
+    ans = _answer_lookup(transcript)
+    name = _find(ans, "name") or (context.strip().split("\n")[0][:60] or "Your Name")
+    about = _find(ans, "about", "do best", "bio") or context.strip()
+    skills_raw = _find(ans, "skill", "tool")
+    skills = [s.strip() for s in skills_raw.replace(";", ",").split(",") if s.strip()]
+    links_raw = _find(ans, "link", "email", "linkedin")
+    location = _find(ans, "location", "based")
+    email = ""
+    links = []
+    for tok in [t.strip() for t in links_raw.replace(";", ",").split(",") if t.strip()]:
+        if "@" in tok and "." in tok and "/" not in tok:
+            email = tok
+        else:
+            label = "Link"
+            for k in ("linkedin", "dribbble", "behance", "twitter", "github", "instagram"):
+                if k in tok.lower():
+                    label = k.capitalize()
+            links.append({"label": label, "url": tok if tok.startswith("http") else "https://" + tok})
+
+    work_projects = [{
+        "title": p.get("title", "Project"),
+        "blurb": (p.get("summary") or p.get("blurb") or "")[:120],
+        "thumbnail": p.get("thumbnail", ""),
+        "href": p.get("url") or p.get("href", ""),
+    } for p in projects]
+
+    blocks: list[dict] = [
+        {"type": "intro", "name": name.split("—")[0].strip(),
+         "role": (name.split("—")[1].strip() if "—" in name else "Designer"),
+         "tagline": about[:120], "avatar": avatar["ref"] if avatar else None,
+         "location": location, "links": links},
+        {"type": "about", "heading": "About", "body": about},
+    ]
+    if work_projects:
+        blocks.append({"type": "work", "heading": "Selected Work", "projects": work_projects})
+    if skills:
+        blocks.append({"type": "skills", "heading": "Skills", "skills": skills})
+    blocks.append({"type": "contact", "heading": "Let's work together",
+                   "body": "Have a project in mind? I'd love to hear about it.",
+                   "email": email, "links": links, "cta": "Get in touch"})
+
+    return {
+        "title": name.split("—")[0].strip(),
+        "summary": about[:160],
+        "recommended_template": config.DEFAULT_TEMPLATE,
+        "template_reason": "Clean default for a product/UX portfolio.",
         "blocks": blocks,
         "engine": "fallback",
     }

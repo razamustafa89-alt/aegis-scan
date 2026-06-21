@@ -53,6 +53,22 @@ TEMPLATES = ["editorial", "bold", "minimal", "dark"]
 DEFAULT_TEMPLATE = "editorial"
 
 
+# ----------------------------------------------------------------------
+# Contact form email (all optional). Without these, submissions are still
+# stored server-side; they are only emailed when SMTP is configured.
+# ----------------------------------------------------------------------
+SMTP_HOST = os.environ.get("SMTP_HOST", "")
+SMTP_PORT = int(os.environ.get("SMTP_PORT", "587"))
+SMTP_USER = os.environ.get("SMTP_USER", "")
+SMTP_PASS = os.environ.get("SMTP_PASS", "")
+SMTP_FROM = os.environ.get("SMTP_FROM", SMTP_USER)
+SMTP_TO = os.environ.get("SMTP_TO", "")
+
+
 def ai_enabled() -> bool:
     """True when a key is configured and the SDK can be used."""
     return bool(ANTHROPIC_API_KEY)
+
+
+def smtp_enabled() -> bool:
+    return bool(SMTP_HOST and SMTP_TO)

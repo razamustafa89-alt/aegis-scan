@@ -50,11 +50,31 @@ API: `POST /api/case-studies` → `POST .../answers` → `POST .../assets` →
 `POST .../generate` → page at `/case/{slug}`. `PATCH /api/case-studies/{id}` updates
 the template/theme. `GET /api/health` reports whether AI is live.
 
+## Portfolio builder (phase 2)
+
+Designers can also generate a full **portfolio website**. The flow mirrors the
+case-study builder and reuses the same templates + brand theming:
+
+1. Add a short bio → **pick which case studies to feature** (from your published
+   ones) and **add external project links** (Dribbble/Behance/live sites).
+2. Optionally upload an avatar, then answer a few follow-up questions.
+3. Generate → a shareable site at `/p/{slug}` with intro, about, a work grid
+   (case-study cards + external links), skills, testimonials, and a **contact form**.
+
+The contact form works with **zero setup**: submissions persist server-side
+(`GET /api/portfolios/{id}/messages`) and are additionally emailed if the optional
+`SMTP_*` env vars are configured. Start it from the landing page → "Build my portfolio",
+or go to `/portfolio`.
+
+Portfolio API: `GET /api/case-studies` (work picker) · `POST /api/portfolios` →
+`POST .../answers` → `POST .../assets` → `POST .../generate` → page at `/p/{slug}` ·
+`PATCH /api/portfolios/{id}` (template/theme) · `POST /api/portfolio/{slug}/contact`.
+
 ## Notes & limitations
 
 - Storage is SQLite + a local `uploads/` dir — **ephemeral** on managed/remote
   containers. Move to Postgres + object storage (S3) for production durability.
 - Live generation calls `api.anthropic.com`; the environment's network policy must
   allow outbound access to Anthropic.
-- **Roadmap (phase 2):** a portfolio-website builder for designers, plus accounts,
-  inline editing of generated copy, and custom domains.
+- **Roadmap:** designer accounts (so the work picker is scoped per user), inline
+  editing of generated copy, custom domains, and durable cloud storage.

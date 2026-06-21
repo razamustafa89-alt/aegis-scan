@@ -14,7 +14,13 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from . import ai, config, storage
-from .models import AnswersRequest, CreateCaseRequest, PatchCaseRequest
+from .models import (
+    AnswersRequest,
+    ContactRequest,
+    CreateCaseRequest,
+    CreatePortfolioRequest,
+    PatchCaseRequest,
+)
 
 app = FastAPI(title="Casefolio API", version="0.1.0")
 
@@ -160,9 +166,164 @@ def _public_case(case: dict) -> dict:
     }
 
 
+# ----------------------------------------------------------------------
+# Portfolios (phase 2)
+# ----------------------------------------------------------------------
+@app.get("/api/case-studies")
+def list_cases():
+    """Published case studies, for the portfolio work picker."""
+    return {"cases": storage.list_published_cases()}
+
+
+@app.post("/api/portfolios")
+def create_portfolio(req: CreatePortfolioRequest):
+    if not req.context.strip():
+        raise HTTPException(400, "context is required")
+    external = [e.model_dump() for e in req.external]
+    pid = storage.create_portfolio(req.context.strip(), req.case_slugs, external)
+    p = storage.get_portfolio(pid)
+    return {"id": pid, **ai.portfolio_questions(p["context"], p["transcript"])}
+
+
+@app.post("/api/portfolios/{pid}/answers")
+def portfolio_answers(pid: str, req: AnswersRequest):
+    p = storage.get_portfolio(pid)
+    if not p:
+        raise HTTPException(404, "portfolio not found")
+    storage.append_portfolio_transcript(pid, "answers", req.answers)
+    p = storage.get_portfolio(pid)
+    return ai.portfolio_questions(p["context"], p["transcript"])
+
+
+@app.post("/api/portfolios/{pid}/assets")
+async def upload_portfolio_asset(pid: str, file: UploadFile = File(...)):
+    p = storage.get_portfolio(pid)
+    if not p:
+        raise HTTPException(404, "portfolio not found")
+    ext = config.ALLOWED_IMAGE_TYPES.get(file.content_type)
+    if not ext:
+        raise HTTPException(400, f"unsupported image type: {file.content_type}")
+    body = await file.read()
+    if len(body) > config.MAX_UPLOAD_BYTES:
+        raise HTTPException(400, "image too large")
+
+    pdir = config.UPLOAD_DIR / "portfolio" / pid
+    pdir.mkdir(parents=True, exist_ok=True)
+    ref = uuid.uuid4().hex[:8]
+    filename = f"{ref}{ext}"
+    (pdir / filename).write_bytes(body)
+    asset = {
+        "ref": ref, "filename": filename, "path": str(pdir / filename),
+        "media_type": file.content_type, "url": f"/uploads/portfolio/{pid}/{filename}",
+    }
+    storage.add_portfolio_asset(pid, asset)
+    return {"asset": {"ref": ref, "url": asset["url"]}}
+
+
+@app.post("/api/portfolios/{pid}/generate")
+def generate_portfolio(pid: str):
+    p = storage.get_portfolio(pid)
+    if not p:
+        raise HTTPException(404, "portfolio not found")
+
+    # Resolve selected case studies to their public cards.
+    by_slug = {c["slug"]: c for c in storage.list_published_cases()}
+    selected = [by_slug[s] for s in (p.get("case_slugs") or []) if s in by_slug]
+    external = p.get("external") or []
+    assets = p.get("assets") or []
+    avatar = assets[0] if assets else None
+
+    document = ai.generate_portfolio(p["context"], p["transcript"], avatar, selected, external)
+    document["asset_urls"] = {a["ref"]: a["url"] for a in assets}
+
+    template = document.get("recommended_template") or config.DEFAULT_TEMPLATE
+    if template not in config.TEMPLATES:
+        template = config.DEFAULT_TEMPLATE
+    theme = document.get("theme")  # portfolios may not have an extracted palette
+
+    slug = storage.save_generated_portfolio(pid, document, template, theme)
+    return {
+        "slug": slug, "url": f"/p/{slug}", "template": template,
+        "recommended_template": template, "template_reason": document.get("template_reason", ""),
+        "theme": theme, "templates": config.TEMPLATES,
+    }
+
+
+@app.patch("/api/portfolios/{pid}")
+def patch_portfolio(pid: str, req: PatchCaseRequest):
+    p = storage.get_portfolio(pid)
+    if not p:
+        raise HTTPException(404, "portfolio not found")
+    if req.template and req.template not in config.TEMPLATES:
+        raise HTTPException(400, f"unknown template: {req.template}")
+    storage.update_portfolio_presentation(pid, req.template, req.theme)
+    p = storage.get_portfolio(pid)
+    return {"template": p.get("template"), "theme": p.get("theme")}
+
+
+@app.get("/api/portfolio/{slug}")
+def get_portfolio_by_slug(slug: str):
+    p = storage.get_portfolio_by_slug(slug)
+    if not p:
+        raise HTTPException(404, "portfolio not found")
+    return {
+        "slug": p.get("slug"), "status": p.get("status"),
+        "template": p.get("template") or config.DEFAULT_TEMPLATE, "theme": p.get("theme"),
+        "document": p.get("document"), "templates": config.TEMPLATES,
+    }
+
+
+@app.post("/api/portfolio/{slug}/contact")
+def contact(slug: str, req: ContactRequest):
+    p = storage.get_portfolio_by_slug(slug)
+    if not p:
+        raise HTTPException(404, "portfolio not found")
+    pid = p["id"]
+    if not req.body.strip():
+        raise HTTPException(400, "message body is required")
+    storage.add_message(pid, req.name, req.email, req.body.strip())
+    emailed = _send_email(p, req)
+    return {"ok": True, "emailed": emailed}
+
+
+def _send_email(portfolio: dict, req: ContactRequest) -> bool:
+    if not config.smtp_enabled():
+        return False
+    try:
+        import smtplib
+        from email.message import EmailMessage
+
+        msg = EmailMessage()
+        name = (portfolio.get("document") or {}).get("title", "your portfolio")
+        msg["Subject"] = f"New message via {name}"
+        msg["From"] = config.SMTP_FROM
+        msg["To"] = config.SMTP_TO
+        if req.email:
+            msg["Reply-To"] = req.email
+        msg.set_content(f"From: {req.name} <{req.email}>\n\n{req.body}")
+        with smtplib.SMTP(config.SMTP_HOST, config.SMTP_PORT) as s:
+            s.starttls()
+            if config.SMTP_USER:
+                s.login(config.SMTP_USER, config.SMTP_PASS)
+            s.send_message(msg)
+        return True
+    except Exception:
+        return False  # message is already stored; don't fail the request
+
+
+@app.get("/api/portfolios/{pid}/messages")
+def portfolio_messages(pid: str):
+    if not storage.get_portfolio(pid):
+        raise HTTPException(404, "portfolio not found")
+    return {"messages": storage.list_messages(pid)}
+
+
 @app.get("/api/health")
 def health():
-    return {"status": "ok", "service": "casefolio", "ai_enabled": config.ai_enabled()}
+    return {
+        "status": "ok", "service": "casefolio",
+        "ai_enabled": config.ai_enabled(), "smtp_enabled": config.smtp_enabled(),
+    }
 
 
 # ----------------------------------------------------------------------
@@ -176,6 +337,16 @@ def case_page(slug: str):
 @app.get("/builder")
 def builder_page():
     return FileResponse(config.WEB_DIR / "builder.html")
+
+
+@app.get("/portfolio")
+def portfolio_builder_page():
+    return FileResponse(config.WEB_DIR / "portfolio.html")
+
+
+@app.get("/p/{slug}")
+def portfolio_page(slug: str):
+    return FileResponse(config.WEB_DIR / "site.html")
 
 
 # Serve uploaded images and the frontend.
